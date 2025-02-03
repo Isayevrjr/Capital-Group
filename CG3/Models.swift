@@ -1,6 +1,7 @@
 import UIKit
 
-// MARK: - Модели 
+// MARK: - Модели
+
 struct Project {
     let id: UUID
     var title: String

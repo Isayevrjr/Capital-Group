@@ -36,6 +36,13 @@ class GanttChartViewController: UIViewController {
         createEvents()
         createGanttBars()
         setupCurrentDateLine()
+        setupNavigationBar()
+        setupNavigationBarForEditing()
+    }
+    
+    private func setupNavigationBar() {
+        navigationItem.title = project.title
+        navigationController?.navigationBar.prefersLargeTitles = true
     }
 
     private func setupBaseDate() {
@@ -284,4 +291,107 @@ class GanttChartViewController: UIViewController {
     }
 }
 
-
+extension GanttChartViewController {
+    /// Метод для добавления кнопки с тремя точками на навигационную панель.
+    func setupNavigationBarForEditing() {
+        // Используем системное изображение "ellipsis.circle" для кнопки
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "ellipsis.circle"),
+            style: .plain,
+            target: self,
+            action: #selector(showEventOptions)
+        )
+    }
+    
+    /// Метод, который вызывается при тапе на кнопку. Здесь показываем UIAlertController с вариантами.
+    @objc func showEventOptions() {
+        // Создаем алерт с типом action sheet
+        let alert = UIAlertController(title: nil, message: "Мероприятия", preferredStyle: .actionSheet)
+        
+        // Опция "Добавить новое мероприятие"
+        let addAction = UIAlertAction(title: "Добавить новое мероприятие", style: .default) { [weak self] _ in
+            // Вызываем метод для показа редактора мероприятия, передавая nil,
+            // что означает – создается новое мероприятие
+            self?.presentEventEditor(event: nil)
+        }
+        
+        // Опция "Изменить существующее"
+        let editAction = UIAlertAction(title: "Изменить существующее", style: .default) { [weak self] _ in
+            // Для примера выбираем первое мероприятие из списка.
+            // В реальном приложении можно реализовать выбор нужного мероприятия.
+            if (self?.project.events.first) != nil {
+                self?.presentEventSelection()
+            }
+        }
+        
+        // Кнопка отмены
+        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel, handler: nil)
+        
+        alert.addAction(addAction)
+        alert.addAction(editAction)
+        alert.addAction(cancelAction)
+        
+        // Показываем алерт
+        present(alert, animated: true, completion: nil)
+    }
+    
+    /// Метод для показа контроллера-редактора мероприятия (как для добавления, так и для редактирования).
+    /// - Parameter event: Если передано значение, то происходит редактирование; если nil – добавление нового.
+    func presentEventEditor(event: Event?) {
+        // Создаем экземпляр контроллера редактора мероприятия
+        let eventEditor = EventEditorViewController()
+        eventEditor.eventToEdit = event
+        
+        // Замыкание, которое вызывается после сохранения мероприятия
+        eventEditor.onSave = { [weak self] editedEvent in
+            if let existingEvent = event {
+                // Если редактируется существующее мероприятие, находим его индекс и обновляем
+                if let index = self?.project.events.firstIndex(where: { $0.id == existingEvent.id }) {
+                    self?.project.events[index] = editedEvent
+                }
+            } else {
+                // Если создается новое мероприятие, добавляем его в список
+                self?.project.events.append(editedEvent)
+            }
+            
+            // Обновляем интерфейс диаграммы Ганта, удаляя старые представления и создавая новые
+            self?.ganttBarsView.subviews.forEach { $0.removeFromSuperview() }
+            self?.eventsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+            self?.createEvents()
+            self?.createGanttBars()
+        }
+        
+        // Оборачиваем контроллер в UINavigationController для отображения навигационной панели (с кнопкой "Сохранить")
+        let navController = UINavigationController(rootViewController: eventEditor)
+        navController.modalPresentationStyle = .pageSheet
+        
+        self.present(navController, animated: true, completion: nil)
+    }
+    
+    func presentEventSelection() {
+        // Проверяем, что в проекте есть мероприятия
+        guard !project.events.isEmpty else {
+            let noEventsAlert = UIAlertController(title: "Ошибка", message: "Нет мероприятий для редактирования.", preferredStyle: .alert)
+            noEventsAlert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(noEventsAlert, animated: true, completion: nil)
+            return
+        }
+        
+        // Создаем новый UIAlertController для выбора мероприятия
+        let selectionAlert = UIAlertController(title: "Выберите мероприятие", message: nil, preferredStyle: .actionSheet)
+        
+        // Добавляем для каждого мероприятия действие с его названием
+        for event in project.events {
+            let eventAction = UIAlertAction(title: event.title, style: .default) { [weak self] _ in
+                // После выбора вызываем метод редактирования с выбранным мероприятием
+                self?.presentEventEditor(event: event)
+            }
+            selectionAlert.addAction(eventAction)
+        }
+        
+        // Добавляем действие отмены
+        selectionAlert.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: nil))
+        
+        self.present(selectionAlert, animated: true, completion: nil)
+    }
+}
