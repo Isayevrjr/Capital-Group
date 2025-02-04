@@ -130,12 +130,28 @@ extension ProjectListViewController: UICollectionViewDataSource, UICollectionVie
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let vc = GanttChartViewController()
-        vc.project = projects[indexPath.item]
-        navigationController?.pushViewController(vc, animated: true)
+        let project = projects[indexPath.item]
+                
+        let ganttVC = GanttChartViewController()
+            ganttVC.project = project
+            let ganttNav = UINavigationController(rootViewController: ganttVC)
+
+            ganttNav.tabBarItem = UITabBarItem(title: "Диаграмма", image: nil, tag: 0)
+            
+            let timelineVC = TimelineViewController()
+            let timelineNav = UINavigationController(rootViewController: timelineVC)
+            timelineNav.tabBarItem = UITabBarItem(title: "Таймлайн", image: nil, tag: 1)
+            
+            // Создаем TabBarController с навигационными контроллерами
+            let tabBarController = UITabBarController()
+            tabBarController.viewControllers = [ganttNav, timelineNav]
+            tabBarController.navigationItem.title = project.title
+            
+        
+        // Переходим к таб-бару через навигационный контроллер
+        navigationController?.pushViewController(tabBarController, animated: true)
     }
 }
-
 // MARK: - Ячейка проекта
 class ProjectCell: UICollectionViewCell {
     static let reuseID = "ProjectCell"

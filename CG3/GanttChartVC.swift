@@ -36,13 +36,7 @@ class GanttChartViewController: UIViewController {
         createEvents()
         createGanttBars()
         setupCurrentDateLine()
-        setupNavigationBar()
         setupNavigationBarForEditing()
-    }
-    
-    private func setupNavigationBar() {
-        navigationItem.title = project.title
-        navigationController?.navigationBar.prefersLargeTitles = true
     }
 
     private func setupBaseDate() {

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		574A043C2D50AD6C00A811B9 /* EventEditorVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 574A043B2D50AD5200A811B9 /* EventEditorVC.swift */; };
+		574A04432D5116BE00A811B9 /* TimeLineViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 574A04422D5116B100A811B9 /* TimeLineViewController.swift */; };
 		57636AE12D4E3C72004FEE6F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57636AD92D4E3C72004FEE6F /* AppDelegate.swift */; };
 		57636AE22D4E3C72004FEE6F /* ProjectListVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57636ADF2D4E3C72004FEE6F /* ProjectListVC.swift */; };
 		57636AE32D4E3C72004FEE6F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 57636ADA2D4E3C72004FEE6F /* Assets.xcassets */; };
@@ -18,6 +19,7 @@
 
 /* Begin PBXFileReference section */
 		574A043B2D50AD5200A811B9 /* EventEditorVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEditorVC.swift; sourceTree = "<group>"; };
+		574A04422D5116B100A811B9 /* TimeLineViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeLineViewController.swift; sourceTree = "<group>"; };
 		57636A922D4CE0FD004FEE6F /* CG3.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CG3.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		57636AD92D4E3C72004FEE6F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		57636ADA2D4E3C72004FEE6F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -66,6 +68,7 @@
 				57636ADF2D4E3C72004FEE6F /* ProjectListVC.swift */,
 				57636AE82D4E3CBE004FEE6F /* GanttChartVC.swift */,
 				574A043B2D50AD5200A811B9 /* EventEditorVC.swift */,
+				574A04422D5116B100A811B9 /* TimeLineViewController.swift */,
 			);
 			path = CG3;
 			sourceTree = "<group>";
@@ -148,6 +151,7 @@
 				57636AE22D4E3C72004FEE6F /* ProjectListVC.swift in Sources */,
 				574A043C2D50AD6C00A811B9 /* EventEditorVC.swift in Sources */,
 				57636AEB2D4E3D64004FEE6F /* Models.swift in Sources */,
+				574A04432D5116BE00A811B9 /* TimeLineViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
