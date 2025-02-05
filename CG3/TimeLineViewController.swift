@@ -4,9 +4,10 @@ class TimelineViewController: UIViewController {
     
     private let scrollView = UIScrollView()
     private let timelineView = UIView()
-    private var scale: CGFloat = 1.0
     private var mainEventLabels: [UILabel] = []
     private var detailedEventLabels: [UILabel] = []
+    private var dateLabels: [UILabel] = []
+    private var isDetailViewVisible = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -15,39 +16,34 @@ class TimelineViewController: UIViewController {
         setupGestureRecognizers()
     }
     
+    private func setupGestureRecognizers() {
+        let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
+        doubleTapGesture.numberOfTapsRequired = 2
+        view.addGestureRecognizer(doubleTapGesture)
+    }
+    
     private func setupScrollView() {
         scrollView.frame = view.bounds
-        scrollView.contentSize = CGSize(width: view.frame.width * 2, height: view.frame.height)
+        scrollView.contentSize = CGSize(width: view.frame.width * 3, height: view.frame.height)
         scrollView.showsHorizontalScrollIndicator = true
         scrollView.showsVerticalScrollIndicator = false
-        scrollView.bounces = false
+        scrollView.bounces = true
         scrollView.isScrollEnabled = true
-        scrollView.alwaysBounceVertical = false
-        scrollView.minimumZoomScale = 1.0
-        scrollView.maximumZoomScale = 3.0
-        scrollView.delegate = self
+        scrollView.alwaysBounceHorizontal = true
         view.addSubview(scrollView)
     }
     
     private func setupTimeline() {
-        let width = (scrollView.contentSize.width - 40) * 2
+        let width = scrollView.contentSize.width * 1.5
         let height: CGFloat = 200
         
-        timelineView.frame = CGRect(x: 20, y: view.center.y - height / 2, width: width, height: height)
+        timelineView.frame = CGRect(x: 0, y: view.center.y - height / 2, width: width, height: height)
         timelineView.layer.cornerRadius = 10
-        timelineView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(timelineView)
         
         applyGradientToTimeline()
-        
-        NSLayoutConstraint.activate([
-            timelineView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            timelineView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 20),
-            timelineView.widthAnchor.constraint(equalToConstant: width),
-            timelineView.heightAnchor.constraint(equalToConstant: height)
-        ])
-        
         addMainEvents()
+        addDateLabels(forDetailedView: false)
     }
     
     private func applyGradientToTimeline() {
@@ -65,7 +61,9 @@ class TimelineViewController: UIViewController {
     private func addMainEvents() {
         let mainEvents: [(String, CGFloat, CGFloat)] = [
             ("Концерт", 50, 350),
-            ("Свадьба", 400, 700)
+            ("Свадьба", 400, 700),
+            ("Конференция", 750, 1050),
+            ("Выставка", 1100, 1400)
         ]
         
         for event in mainEvents {
@@ -74,64 +72,70 @@ class TimelineViewController: UIViewController {
             label.textColor = .white
             label.font = UIFont.boldSystemFont(ofSize: 18)
             label.textAlignment = .center
-            label.backgroundColor = .red
+            label.backgroundColor = .gray
             label.layer.cornerRadius = 5
             label.layer.masksToBounds = true
+            label.isUserInteractionEnabled = true
+            
+            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleEventTap(_:)))
+            label.addGestureRecognizer(tapGesture)
+            
             timelineView.addSubview(label)
             mainEventLabels.append(label)
         }
     }
     
-    private func setupGestureRecognizers() {
-        let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:)))
-        scrollView.addGestureRecognizer(pinchGesture)
-    }
-    
-    @objc private func handlePinch(_ gesture: UIPinchGestureRecognizer) {
-        if gesture.state == .changed {
-            scale *= gesture.scale
-            scale = max(1.0, min(scale, 3.0))
-            
-            UIView.animate(withDuration: 0.3) {
-                self.timelineView.transform = CGAffineTransform(scaleX: self.scale, y: self.scale)
-                self.scrollView.contentSize = CGSize(width: self.timelineView.frame.width * self.scale, height: self.scrollView.frame.height)
-            }
-            
-            if scale > 2.0 {
-                UIView.animate(withDuration: 0.3, animations: {
-                    for label in self.mainEventLabels {
-                        label.alpha = 0.0
-                        label.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
-                    }
-                }) { _ in
-                    self.showDetailedEvents()
-                }
-            } else {
-                self.hideDetailedEvents()
-                UIView.animate(withDuration: 0.3) {
-                    for label in self.mainEventLabels {
-                        label.alpha = 1.0
-                        label.transform = .identity
-                    }
-                }
-            }
-            
-            gesture.scale = 1.0
+    private func addDateLabels(forDetailedView: Bool) {
+        for label in dateLabels {
+            label.removeFromSuperview()
+        }
+        dateLabels.removeAll()
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd.MM.yyyy"
+        
+        let startDate = Calendar.current.date(from: DateComponents(year: 2025, month: 1, day: 1))!
+        let interval = forDetailedView ? 7 : 30
+        let count = forDetailedView ? 12 : 6
+        
+        var xOffset: CGFloat = 50
+        for i in 0..<count {
+            let date = Calendar.current.date(byAdding: .day, value: i * interval, to: startDate)!
+            let label = UILabel(frame: CGRect(x: xOffset, y: 180, width: 100, height: 20))
+            label.text = dateFormatter.string(from: date)
+            label.textColor = .black
+            label.font = UIFont.systemFont(ofSize: 14)
+            label.textAlignment = .center
+            timelineView.addSubview(label)
+            dateLabels.append(label)
+            xOffset += 150
         }
     }
     
-    private func showDetailedEvents() {
-        if !detailedEventLabels.isEmpty { return }
+    @objc private func handleEventTap(_ gesture: UITapGestureRecognizer) {
+        guard let label = gesture.view as? UILabel else { return }
         
+        if !isDetailViewVisible {
+            for eventLabel in mainEventLabels {
+                eventLabel.alpha = 0.0
+            }
+            showDetailedEvents(for: label)
+            addDateLabels(forDetailedView: true)
+            isDetailViewVisible = true
+        }
+    }
+    
+    private func showDetailedEvents(for mainEvent: UILabel) {
         let detailedEvents: [(String, CGFloat, CGFloat)] = [
             ("Подготовка", 60, 150),
             ("Смета", 160, 250),
             ("Договоры", 260, 310),
-            ("Заказ еды", 320, 350)
+            ("Заказ еды", 320, 350),
+            ("Тестовый этап", 360, 410)
         ]
         
         for event in detailedEvents {
-            let label = UILabel(frame: CGRect(x: event.1, y: 60, width: event.2 - event.1, height: 80))
+            let label = UILabel(frame: CGRect(x: event.1, y: mainEvent.frame.maxY + 10, width: event.2 - event.1, height: 50))
             label.text = event.0
             label.textColor = .black
             label.font = UIFont.boldSystemFont(ofSize: 16)
@@ -140,34 +144,31 @@ class TimelineViewController: UIViewController {
             label.layer.cornerRadius = 5
             label.layer.masksToBounds = true
             label.alpha = 0.0
-            label.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+            
             timelineView.addSubview(label)
             detailedEventLabels.append(label)
             
-            UIView.animate(withDuration: 0.4, delay: 0.1, options: .curveEaseOut, animations: {
+            UIView.animate(withDuration: 0.4, animations: {
                 label.alpha = 1.0
-                label.transform = .identity
-            }, completion: nil)
+            })
+        }
+    }
+    
+    @objc private func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
+        if isDetailViewVisible {
+            hideDetailedEvents()
+            addDateLabels(forDetailedView: false)
+            for eventLabel in mainEventLabels {
+                eventLabel.alpha = 1.0
+            }
+            isDetailViewVisible = false
         }
     }
     
     private func hideDetailedEvents() {
-        UIView.animate(withDuration: 0.3, animations: {
-            for label in self.detailedEventLabels {
-                label.alpha = 0.0
-                label.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-            }
-        }) { _ in
-            for label in self.detailedEventLabels {
-                label.removeFromSuperview()
-            }
-            self.detailedEventLabels.removeAll()
+        for label in self.detailedEventLabels {
+            label.removeFromSuperview()
         }
-    }
-}
-
-extension TimelineViewController: UIScrollViewDelegate {
-    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-        return timelineView
+        self.detailedEventLabels.removeAll()
     }
 }
