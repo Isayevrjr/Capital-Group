@@ -17,7 +17,7 @@ class GanttChartViewController: UIViewController {
     // Форматтеры
     private let monthFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "dd.MM"
+        formatter.dateFormat = "MM"
         return formatter
     }()
     
@@ -26,6 +26,14 @@ class GanttChartViewController: UIViewController {
         formatter.dateFormat = "yyyy"
         return formatter
     }()
+    
+    private let eventsTitleLabel: UILabel = {
+         let label = UILabel()
+         label.text = "Мероприятия"
+         label.font = .boldSystemFont(ofSize: 18)
+         label.textAlignment = .left
+         return label
+     }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -55,12 +63,20 @@ class GanttChartViewController: UIViewController {
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         
+         // Добавляем заголовок "Мероприятия"
+             scrollView.addSubview(eventsTitleLabel)
+             eventsTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+             NSLayoutConstraint.activate([
+                eventsTitleLabel.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 30),
+                 eventsTitleLabel.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 16)
+             ])
+        
         // Контейнер для временной шкалы
         scrollView.addSubview(timelineContainer)
         timelineContainer.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             timelineContainer.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            timelineContainer.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            timelineContainer.leadingAnchor.constraint(equalTo: eventsTitleLabel.trailingAnchor, constant: 80),
             timelineContainer.widthAnchor.constraint(equalToConstant: 2000),
             timelineContainer.heightAnchor.constraint(equalToConstant: 80) // Увеличили высоту
         ])
@@ -83,7 +99,7 @@ class GanttChartViewController: UIViewController {
         
         eventsStack.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            eventsStack.topAnchor.constraint(equalTo: timelineContainer.bottomAnchor, constant: 16),
+            eventsStack.topAnchor.constraint(equalTo: eventsTitleLabel.bottomAnchor, constant: 16),
             eventsStack.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 16),
             eventsStack.widthAnchor.constraint(equalToConstant: 200)
         ])
@@ -94,7 +110,7 @@ class GanttChartViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             ganttBarsView.topAnchor.constraint(equalTo: timelineContainer.bottomAnchor, constant: 16),
-            ganttBarsView.leadingAnchor.constraint(equalTo: eventsStack.trailingAnchor, constant: 16),
+            ganttBarsView.leadingAnchor.constraint(equalTo: timelineContainer.leadingAnchor),
             ganttBarsView.heightAnchor.constraint(equalToConstant: 500),
             ganttBarsView.widthAnchor.constraint(equalToConstant: 2000),
             ganttBarsView.heightAnchor.constraint(equalToConstant: CGFloat(project.events.count) * rowHeight)
@@ -131,7 +147,7 @@ class GanttChartViewController: UIViewController {
                 monthLabel.text = monthFormatter.string(from: currentDate)
                 monthLabel.font = .systemFont(ofSize: 10)
                 monthLabel.frame = CGRect(
-                    x: currentX,
+                    x: 50 + currentX,
                     y: 50, // Смещаем ниже года
                     width: 60,
                     height: 20
@@ -288,6 +304,7 @@ class GanttChartViewController: UIViewController {
 extension GanttChartViewController {
     /// Метод для добавления кнопки с тремя точками на навигационную панель.
     func setupNavigationBarForEditing() {
+ 
         // Используем системное изображение "ellipsis.circle" для кнопки
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "ellipsis.circle"),
