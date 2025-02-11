@@ -14,6 +14,7 @@ class GanttChartViewController: UIViewController {
     private var baseDate: Date!
     private let rowHeight: CGFloat = 60
     
+    
     // Форматтеры
     private let monthFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -99,7 +100,7 @@ class GanttChartViewController: UIViewController {
         
         eventsStack.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            eventsStack.topAnchor.constraint(equalTo: eventsTitleLabel.bottomAnchor, constant: 16),
+            eventsStack.topAnchor.constraint(equalTo: timelineContainer.bottomAnchor, constant: 16),
             eventsStack.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 16),
             eventsStack.widthAnchor.constraint(equalToConstant: 200)
         ])
@@ -115,6 +116,7 @@ class GanttChartViewController: UIViewController {
             ganttBarsView.widthAnchor.constraint(equalToConstant: 2000),
             ganttBarsView.heightAnchor.constraint(equalToConstant: CGFloat(project.events.count) * rowHeight)
         ])
+        
     }
 
     private func createTimeline() {
@@ -202,8 +204,8 @@ class GanttChartViewController: UIViewController {
     }
 
     private func createGanttBars() {
-        let rowHeight: CGFloat = 60 // Высота строки
-        let barHeight: CGFloat = 20 // Высота полосы
+        let rowHeight: CGFloat = 40 // Высота строки
+        let barHeight: CGFloat = 15 // Высота полосы
         let verticalPadding = (rowHeight - barHeight) / 2 // Отступ сверху и снизу
         
         project.events.enumerated().forEach { index, event in
@@ -355,6 +357,7 @@ extension GanttChartViewController {
         
         // Замыкание, которое вызывается после сохранения мероприятия
         eventEditor.onSave = { [weak self] editedEvent in
+            
             if let existingEvent = event {
                 // Если редактируется существующее мероприятие, находим его индекс и обновляем
                 if let index = self?.project.events.firstIndex(where: { $0.id == existingEvent.id }) {
@@ -370,6 +373,7 @@ extension GanttChartViewController {
             self?.eventsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
             self?.createEvents()
             self?.createGanttBars()
+            
         }
         
         // Оборачиваем контроллер в UINavigationController для отображения навигационной панели (с кнопкой "Сохранить")
